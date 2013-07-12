@@ -136,3 +136,36 @@
                         (db conn))
                      first))
              ["John" "Bill"])))))
+
+
+(def singleton-helper 
+  (gen-plan
+   [id (singleton {:key/name "John"
+                   :key/age 42})]
+   id))
+
+(defn count-johns [conn]
+  (count (q '[:find ?e
+              :where
+              [?e :key/name "John"]]
+            (db conn))))
+
+(deftest singletons
+  (testing "can assert singletons"
+    (let [conn (make-db)]
+      (is (= (do (-> singleton-helper
+                     (get-plan conn)
+                     commit)
+                 (count-johns conn))
+             1))))
+  (testing "can assert singletons are unified for a given transaction"
+    (let [conn (make-db)]
+      (is (= (do (-> (gen-plan
+                      [id1 singleton-helper
+                       id2 singleton-helper]
+                      (do (assert (= id1 id2))
+                          nil))
+                     (get-plan conn)
+                     commit)
+                 (count-johns conn))
+             1)))))
