@@ -216,7 +216,7 @@
   (fn [plan]
     [nil plan]))
 
-(defn get-plan [conn planval]
+(defn get-plan [planval conn]
   (assert (ifn? planval))
   (let [val (planval {:conn conn
                       :db (db conn)
