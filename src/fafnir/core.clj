@@ -174,17 +174,27 @@
        (let [~@forms]
          [~id-expr ~psym]))))
 
-(defn assoc-plan [key val]
+(defn assoc-plan
+  "Like assoc but uses the plan as the map"
+  [key val]
   (fn [plan]
-    [nil (assoc plan key val)]))
+    [nil (assoc-in plan [:user key] val)]))
 
-(defn assoc-in-plan [path val]
+(defn assoc-in-plan
+  "Like clojure.core/assoc-in but allows the user to assoc data into the plan"
+  [path val]
   (fn [plan]
-    [nil (assoc-in plan path val)]))
+    [nil (assoc-in plan (vec (list* :user path)) val)]))
+
+(defn update-in-plan
+  "Like clojure.core/update-in but allows the user to modify the state of the plan"
+  [path f & args]
+  (fn [plan]
+    [nil (apply update-in plan (vec (list* :user path)) f args)]))
 
 (defn get-in-plan [path]
   (fn [plan]
-    [(get-in plan path) plan]))
+    [(get-in plan (list* :user path)) plan]))
 
 (defn push-binding [key value]
   (fn [plan]

@@ -183,3 +183,18 @@
                      commit)
                  (count-johns conn))
              1)))))
+
+(deftest assoc-in-tests
+  (testing "assoc, get, update-in"
+    (is (= (-> (gen-plan
+                [_ (assoc-in-plan [:foo :bar] 42)
+                 x (get-in-plan [:foo :bar])
+                 _ (do (assert (= x 42))
+                       no-op)
+                 _ (update-in-plan [:foo :bar] + 10)
+                 x (get-in-plan [:foo :bar])
+                 _ (do (assert (= x 52))
+                       no-op)]
+                x)
+               run-plan)
+           [52 {:user {:foo {:bar 52}}}]))))
