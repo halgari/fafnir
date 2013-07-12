@@ -168,4 +168,18 @@
                      (get-plan conn)
                      commit)
                  (count-johns conn))
+             1))))
+  (testing "can assert singletons are unified for a given transaction"
+    (let [conn (make-db)]
+      (is (= (do (-> (gen-plan
+                      [id1 singleton-helper]
+                      id1)
+                     (get-plan conn)
+                     commit)
+                 (-> (gen-plan
+                      [id1 singleton-helper]
+                      id1)
+                     (get-plan conn)
+                     commit)
+                 (count-johns conn))
              1)))))
