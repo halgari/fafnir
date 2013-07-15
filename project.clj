@@ -1,4 +1,4 @@
-(defproject fafnir "1.0"
+(defproject fafnir "1.0.1"
   :description "A library for building complex transactions for datomic"
   :url "http://github.com/halgari/fafnir"
   :license {:name "Eclipse Public License"
