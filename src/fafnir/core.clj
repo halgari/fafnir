@@ -10,7 +10,7 @@
 
 (defn commit
   "Commit processes the transaction with the associated connection, then updates all the tempids to match. You can then use plan-id to get the realized ent-ids"
-  [{:keys [conn db new-ents updates valid-ids] :as plan}]
+  [{:keys [conn db new-ents updates redactions valid-ids] :as plan}]
   (assert (and conn db))
   (let [ents (reduce
               (fn [acc [ent id]]
@@ -25,15 +25,18 @@
                           (count new-ents)))
 
         data (concat #_(mapcat (fn [ent]
-                               (let [ent (dissoc ent :db/id)]
-                                 (map (partial vector :db/add (:db/id ent))
-                                      (keys ent)
-                                      (vals ent))))
+                                 (let [ent (dissoc ent :db/id)]
+                                   (map (partial vector :db/add (:db/id ent))
+                                        (keys ent)
+                                        (vals ent))))
                                (vals ents))
                      (vals ents)
                      (map (fn [[id k v]]
                             [:db/add id k v])
-                          updates))
+                          updates)
+                     (map (fn [[id k v]]
+                            [:db/retract id k v])
+                          redactions))
         {:keys [db-before db-after tempids tx-data]}
         @(d/transact conn data)
         ptempids (zipmap
@@ -182,6 +185,10 @@
     [(apply q clauses (:db plan) params)
      plan]))
 
+(defn redact [ent k v]
+  (fn [plan]
+    [ent (update-in plan [:redactions] (fnil conj []) [ent k v])]))
+
 (defn assoc-plan
   "Like assoc but uses the plan as the map"
   [key val]
@@ -233,6 +240,11 @@
           no-op)])"
   (fn [plan]
     [nil plan]))
+
+(defn guard [pred result]
+  (if pred
+    result
+    no-op))
 
 (defn get-plan [planval conn]
   (assert (ifn? planval))
