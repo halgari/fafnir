@@ -198,3 +198,23 @@
                 x)
                run-plan)
            [52 {:user {:foo {:bar 52}}}]))))
+
+
+(deftest query-tests
+  (testing "create tests"
+    (let [conn (make-db)]
+      (-> (gen-plan
+           [_ (assert-entity {:key/name "John"
+                              :key/age 42})]
+           nil)
+          (get-plan conn)
+          commit)
+      (-> (gen-plan
+           [results (query '[:find ?age
+                             :in $ ?name
+                             :where
+                             [?e :key/name ?name]
+                             [?e :key/age ?age]]
+                           "John")]
+           (is (= results #{[42]})))
+          (get-plan conn)))))

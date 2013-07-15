@@ -174,6 +174,14 @@
        (let [~@forms]
          [~id-expr ~psym]))))
 
+(defn query
+  "Executes a query against the :db found in the state"
+  [clauses & params]
+  (fn [plan]
+    (assert (:db plan) "No database given in plan")
+    [(apply q clauses (:db plan) params)
+     plan]))
+
 (defn assoc-plan
   "Like assoc but uses the plan as the map"
   [key val]
