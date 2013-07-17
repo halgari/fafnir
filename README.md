@@ -7,6 +7,10 @@ We make use of the state monad to allow for large deeply nested structures to be
 
 ## Usage
 
+To use in your project, simply include it in your project.clj:
+
+    [fafnir "1.0.1"]
+
 Example Usage (from the tests):
 
     (testing "slightly more complex insert"
