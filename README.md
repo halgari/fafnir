@@ -9,7 +9,7 @@ We make use of the state monad to allow for large deeply nested structures to be
 
 To use in your project, simply include it in your project.clj:
 
-    [fafnir "1.0.1"]
+    [fafnir "1.0.2"]
 
 Example Usage (from the tests):
 
