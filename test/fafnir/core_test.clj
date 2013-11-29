@@ -7,29 +7,19 @@
   (plan {}))
 
 (def test-schema
-  [{:db/id #db/id [:db.part/db]
-    :db/ident :key/name
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db.install/_attribute :db.part/db}
-   
-   {:db/id #db/id [:db.part/db]
-    :db/ident :key/age
-    :db/valueType :db.type/long
-    :db/cardinality :db.cardinality/one
-    :db.install/_attribute :db.part/db}
-
-   {:db/id #db/id [:db.part/db]
-    :db/ident :key/parent
-    :db/valueType :db.type/ref
-    :db/cardinality :db.cardinality/one
-    :db.install/_attribute :db.part/db}])
+  {:key/name #{:string :one}
+   :key/age #{:long :one :indexed}
+   :key/parent #{:ref :one}})
 
 (defn make-db []
   (let [uri (str "datomic:mem://" (gensym "db_"))
         _ (d/create-database uri)
         conn (d/connect uri)]
-    @(d/transact conn test-schema)
+    (-> (gen-plan
+         [_ (assert-schema test-schema)]
+         nil)
+        (get-plan conn)
+        commit)
     conn))
 
 (deftest schema-test
@@ -138,7 +128,7 @@
              ["John" "Bill"])))))
 
 
-(def singleton-helper 
+(def singleton-helper
   (gen-plan
    [id (singleton {:key/name "John"
                    :key/age 42})]

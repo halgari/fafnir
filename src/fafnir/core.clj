@@ -50,7 +50,7 @@
       :new-ents nil
       :singletons nil)))
 
-(defn plan-id 
+(defn plan-id
   [plan val]
   (if-let [v (get-in plan [:tempids val])]
     v
@@ -274,3 +274,33 @@
      [nil plan]
      (reverse seq))))
 
+
+
+;;;; Schema helpers ;;;;;;
+
+(def kw->attrs
+  {:one [:db/cardinality :db.cardinality/one]
+   :many [:db/cardinality :db.cardinality/many]
+   :ref [:db/valueType :db.type/ref]
+   :keyword [:db/valueType :db.type/keyword]
+   :long [:db/valueType :db.type/long]
+   :double [:db/valueType :db.type/double]
+   :boolean [:db/valueType :db.type/boolean]
+   :string [:db/valueType :db.type/string]
+   :unique [:db/unique :db.unique/value]
+   :indexed [:db/index true]})
+
+(defn assert-schema [desc]
+  (all (map
+        (fn [[id attrs]]
+          (assert-entity (merge
+                          {:db/id (d/tempid :db.part/db)
+                           :db/ident id
+                           :db.install/_attribute :db.part/db}
+                          (reduce
+                           (fn [m attr]
+                             (assert (kw->attrs attr) (pr-str attr))
+                             (apply assoc m (kw->attrs attr)))
+                           {}
+                           attrs))))
+        desc)))
