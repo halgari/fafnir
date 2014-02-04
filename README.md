@@ -9,27 +9,31 @@ We make use of the state monad to allow for large deeply nested structures to be
 
 To use in your project, simply include it in your project.clj:
 
-    [fafnir "1.0.2"]
+```clojure
+[fafnir "1.0.2"]
+```
 
 Example Usage (from the tests):
 
-    (testing "slightly more complex insert"
-        (let [conn (make-db)]
-          (is (= (do (-> (gen-plan
-                          [id (assert-entity {:key/name "John" :key/age 42})
-                           pid (assert-entity {:key/name "Bill" :key/age 72})
-                           _ (update-entity id :key/parent pid)]
-                          id)
-                         (get-plan conn)
-                         commit)
-                     (-> (q '[:find ?child ?parent
-                              :where
-                              [?e :key/name ?child]
-                              [?e :key/parent ?pid]
-                              [?pid :key/name ?parent]]
-                            (db conn))
-                         first))
-                 ["John" "Bill"]))))
+```clojure
+(testing "slightly more complex insert"
+    (let [conn (make-db)]
+      (is (= (do (-> (gen-plan
+                      [id (assert-entity {:key/name "John" :key/age 42})
+                       pid (assert-entity {:key/name "Bill" :key/age 72})
+                       _ (update-entity id :key/parent pid)]
+                      id)
+                     (get-plan conn)
+                     commit)
+                 (-> (q '[:find ?child ?parent
+                          :where
+                          [?e :key/name ?child]
+                          [?e :key/parent ?pid]
+                          [?pid :key/name ?parent]]
+                        (db conn))
+                     first))
+             ["John" "Bill"]))))
+```
 
 ## License
 
